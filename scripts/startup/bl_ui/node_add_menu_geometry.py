@@ -185,6 +185,7 @@ class NODE_MT_geometry_node_GEO_GEOMETRY_READ(Menu):
         node_add_menu.add_node_type(layout, "GeometryNodeInputNormal")
         node_add_menu.add_node_type(layout, "GeometryNodeInputPosition")
         node_add_menu.add_node_type(layout, "GeometryNodeInputRadius")
+        node_add_menu.add_node_type(layout, "GeometryNodeInputTest")
         if context.space_data.geometry_nodes_type == 'TOOL':
             node_add_menu.add_node_type(layout, "GeometryNodeToolSelection")
         node_add_menu.draw_assets_for_catalog(layout, "Geometry/Read")
