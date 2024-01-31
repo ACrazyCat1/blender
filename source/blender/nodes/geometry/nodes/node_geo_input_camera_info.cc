@@ -19,10 +19,8 @@ static void node_declare(NodeDeclarationBuilder &b)
   b.add_input<decl::Object>("Camera").hide_label();
   b.add_output<decl::Float>("Focal Length");
   b.add_output<decl::Float>("Sensor Width");
-  b.add_output<decl::Int>("Res X");
-  b.add_output<decl::Int>("Res Y");
-  b.add_output<decl::Float>("Shift X");
-  b.add_output<decl::Float>("Shift Y");
+  b.add_output<decl::Vector>("Res");
+  b.add_output<decl::Vector>("Shift");
   b.add_output<decl::Float>("Clip Start");
   b.add_output<decl::Float>("Clip End");
   b.add_output<decl::Float>("Focus Distance");
@@ -30,8 +28,8 @@ static void node_declare(NodeDeclarationBuilder &b)
   b.add_output<decl::Int>("Blades");
   b.add_output<decl::Float>("Rotation");
   b.add_output<decl::Float>("Ratio");
-
-
+  //b.add_output<decl::Bool>("Is Orthographic");
+  b.add_output<decl::Float>("Orthographic Scale");
 }
 
 static void node_exec(GeoNodeExecParams params)
@@ -49,8 +47,10 @@ static void node_exec(GeoNodeExecParams params)
   BKE_render_resolution(&renderData, use_crop, &res_x, &res_y);
 
   //set render outputs
-  params.set_output("Res X", res_x);
-  params.set_output("Res Y", res_y);
+  float3 res;
+  res = {static_cast<float>(res_x), static_cast<float>(res_y), 0.0f};
+  params.set_output("Res", res);
+  
   // check if camera does not exist
   if (camera == nullptr) {
     params.set_default_remaining_outputs();
@@ -63,13 +63,18 @@ static void node_exec(GeoNodeExecParams params)
   // get dof settings
   Camera *cameraData = (Camera *)camera->data;
   CameraDOFSettings dof = cameraData->dof;
- 
+
+  // orthographic (unused)
+  //bool isOrtho = cameraParams.is_ortho; 
+
+  // get shift as vector
+  float3 shift;
+  shift = {cameraParams.shiftx, cameraParams.shifty, 0.0f};
 
   // set camera dependent settings
   params.set_output("Focal Length", cameraParams.lens);
   params.set_output("Sensor Width", cameraParams.sensor_x);
-  params.set_output("Shift X", cameraParams.shiftx);
-  params.set_output("Shift Y", cameraParams.shifty);
+  params.set_output("Shift", shift);
   params.set_output("Clip Start", cameraParams.clip_start);
   params.set_output("Clip End", cameraParams.clip_end);
   params.set_output("Focus Distance", dof.focus_distance);
@@ -77,7 +82,8 @@ static void node_exec(GeoNodeExecParams params)
   params.set_output("Blades", dof.aperture_blades);
   params.set_output("Rotation", dof.aperture_rotation);
   params.set_output("Ratio", dof.aperture_ratio);
-
+  //params.set_output("Is Orthographic", isOrtho);
+  params.set_output("Orthographic Scale", cameraParams.ortho_scale);
 }
 
 static void node_register() {
